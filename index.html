@@ -152,8 +152,8 @@
 
     <script>
         // --- Globals ---
-        // !!! IMPORTANT: CHANGE THIS URL AFTER YOU DEPLOY YOUR BACKEND !!!
-        const BACKEND_URL = 'https://mindtrack-backend-5wpc.onrender.com';
+        // !!! IMPORTANT: This MUST be your live Render URL !!!
+        const BACKEND_URL = 'https_://mindtrack-backend.onrender.com'; // <--- Make sure this is your URL!
         
         let allHabitLogs = {}; // Stores { "2025-10-25": ["water"], ... }
         let userHabits = [];   // Stores [{id: 1, name: 'water', is_deletable: 0}, ...]
@@ -180,8 +180,8 @@
         const statStreak = document.getElementById('stat-streak');
         const statTotalDays = document.getElementById('stat-total-days');
         const statBestHabit = document.getElementById('stat-best-habit');
-        const statTotalHabits = document.getElementById('stat-total-habits'); // <-- NEW
-        const statStreakEmoji = document.getElementById('stat-streak-emoji'); // <-- NEW
+        const statTotalHabits = document.getElementById('stat-total-habits'); 
+        const statStreakEmoji = document.getElementById('stat-streak-emoji'); 
 
         // Motivation Ref
         const motivationQuote = document.getElementById('motivation-quote');
@@ -251,10 +251,13 @@
 
                 // Populate stats
                 statStreak.textContent = stats.current_streak;
-                statStreakEmoji.textContent = stats.streak_emoji; // <-- NEW
+                statStreakEmoji.textContent = stats.streak_emoji; 
                 statTotalDays.textContent = stats.total_days;
-                statTotalHabits.textContent = stats.total_habits_completed; // <-- NEW
-                statBestHabit.textContent = stats.best_habit;
+                statTotalHabits.textContent = stats.total_habits_completed; 
+                
+                // --- THIS IS THE CHANGE ---
+                // Takes "Read for 20 minutes" and turns it into "Read"
+                statBestHabit.textContent = stats.best_habit.split(' ')[0];
 
                 // Render calendar
                 renderCalendar();
@@ -436,7 +439,7 @@
                 }
 
                 habitElement.innerHTML = `
-                    <span classT="text-lg text-gray-800">${habit.name}</span>
+                    <span class="text-lg text-gray-800">${habit.name}</span>
                     <div class="flex items-center gap-2">
                         ${deleteButtonHTML}
                         <input type="checkbox" data-habit-name="${habit.name}" class="custom-checkbox habit-checkbox appearance-none w-6 h-6 border-2 border-gray-300 rounded-md transition-all" ${isChecked ? 'checked' : ''}>
@@ -535,6 +538,3 @@
 
 </body>
 </html>
-
-
-
