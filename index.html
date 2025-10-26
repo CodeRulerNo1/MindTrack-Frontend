@@ -9,7 +9,15 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { /* ... */ } // No changes needed inside here
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif']
+                    }
+                }
+            } 
+        }
     </script>
     <style>
         .custom-checkbox:checked { background-color: #3b82f6; border-color: #3b82f6; }
