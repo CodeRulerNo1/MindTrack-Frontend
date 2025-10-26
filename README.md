@@ -1,4 +1,4 @@
-[# ✨ Flicker Habits (MindTrack) - Hackathon Frontend
+# ✨ Flicker Habits (MindTrack) - Hackathon Frontend
 
 This is the frontend for the Flicker Habits wellness and habit tracking application, built for the Hackarena hackathon (Problem 3).
 
