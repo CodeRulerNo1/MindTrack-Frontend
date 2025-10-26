@@ -40,3 +40,5 @@ This frontend is ready for deployment on **Netlify's free tier**.
     * Deploy the site.
 
 Your Flicker Habits app will be live!](https://coderulerno1.github.io/MindTrack-Frontend/)
+
+[sceenshot image](img/screenshot-2025-10-26_13-58-25.png)
