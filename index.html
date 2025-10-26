@@ -17,38 +17,14 @@
         }
     </script>
     <style>
-        /* Simple checkmark style for custom checkbox */
-        .custom-checkbox:checked {
-            background-color: #3b82f6; /* bg-blue-500 */
-            border-color: #3b82f6; /* border-blue-500 */
-        }
-        .custom-checkbox:checked::before {
-            content: '✔';
-            color: white;
-            font-size: 1.25rem;
-            line-height: 1.5rem;
-            display: block;
-            text-align: center;
-            width: 1.5rem;
-            height: 1.5rem;
-        }
-        /* Hide sections by default */
-        #calendar-view { display: none; }
-
-        /* Simple spinning loader for when data is loading */
-        .loader {
-            border: 4px solid #f3f3f3; /* Light grey */
-            border-top: 4px solid #3b82f6; /* Blue */
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        .custom-checkbox:checked { background-color: #3b82f6; border-color: #3b82f6; }
+        .custom-checkbox:checked::before { content: '✔'; color: white; font-size: 1.25rem; line-height: 1.5rem; display: block; text-align: center; width: 1.5rem; height: 1.5rem; }
+        #calendar-view, #friend-view { display: none; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Style for the active tab */
+        .tab-active { background-color: #3b82f6; color: white; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); }
+        .tab-inactive { color: #4b5563; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans">
@@ -61,40 +37,30 @@
         </div>
 
         <div class="flex w-full rounded-lg bg-gray-200 p-1 mb-6">
-            <button id="show-log-btn" class="w-1/2 py-2 text-center font-semibold text-white bg-blue-600 rounded-md shadow">Log Habits</button>
-            <button id="show-calendar-btn" class="w-1/2 py-2 text-center font-semibold text-gray-600">Calendar & Stats</button>
+            <button id="show-log-btn" class="w-1/3 py-2 text-center font-semibold tab-active rounded-md">Log</button>
+            <button id="show-calendar-btn" class="w-1/3 py-2 text-center font-semibold tab-inactive rounded-md">Stats</button>
+            <button id="show-friend-btn" class="w-1/3 py-2 text-center font-semibold tab-inactive rounded-md">Friends</button>
         </div>
 
         <div id="log-view">
-            
             <div class="text-center p-4 mb-4 bg-blue-50 border-l-4 border-blue-400 rounded-md shadow-sm min-h-[60px] flex items-center justify-center">
-                <p class="text-lg text-blue-800" id="motivation-quote">Loading your daily motivation...</p>
+                <p class="text-lg text-blue-800" id="motivation-quote">Loading...</p>
             </div>
-
             <div class="space-y-4" id="habit-list-container">
                 <div class="loader" id="habit-list-loader"></div>
             </div>
-
             <div class="mt-8">
                 <label for="new-habit-input" class="block text-md font-semibold text-gray-700 mb-2">Add a Custom Habit</label>
                 <div class="flex gap-2">
                     <input type="text" id="new-habit-input" class="flex-grow p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Meditate for 10 mins">
-                    <button id="add-habit-btn" class="py-3 px-5 bg-gray-700 text-white text-md font-semibold rounded-lg shadow-sm transition-all hover:bg-gray-800 active:scale-[.98]">
-                        Add
-                    </button>
+                    <button id="add-habit-btn" class="py-3 px-5 bg-gray-700 text-white text-md font-semibold rounded-lg shadow-sm transition-all hover:bg-gray-800 active:scale-[.98]">Add</button>
                 </div>
             </div>
-
-            <button id="log-button" class="w-full mt-8 py-3 px-4 bg-blue-600 text-white text-xl font-semibold rounded-lg shadow-md transition-all hover:bg-blue-700 active:scale-[.98]">
-                Log Progress
-            </button>
-
-            <div id="status-label" class="text-center mt-4 h-6 text-lg">
-                </div>
+            <button id="log-button" class="w-full mt-8 py-3 px-4 bg-blue-600 text-white text-xl font-semibold rounded-lg shadow-md transition-all hover:bg-blue-700 active:scale-[.98]">Log Progress</button>
+            <div id="status-label" class="text-center mt-4 h-6 text-lg"></div>
         </div>
 
         <div id="calendar-view">
-            
             <div class="grid grid-cols-4 gap-2 mb-6 text-center">
                 <div>
                     <div class="text-3xl h-10 flex items-center justify-center">
@@ -131,32 +97,45 @@
             <div class="grid grid-cols-7 gap-1 mt-2" id="calendar-days-grid">
                 <div class="loader" id="calendar-loader"></div>
             </div>
-            <p class="text-sm text-center text-gray-500 mt-4">Days you logged habits are marked in green.</p>
+        </div>
 
-            <div class="mt-8 border-t pt-6">
-                <h3 class="text-lg font-semibold text-gray-700 text-center">Need a new challenge?</h3>
-                <p class="text-sm text-gray-500 text-center mb-4">Let our AI suggest a new habit based on your progress.</p>
-                
-                <button id="suggest-habit-btn" class="w-full py-2 px-4 bg-gray-600 text-white text-md font-semibold rounded-lg shadow-sm transition-all hover:bg-gray-700 active:scale-[.98]">
-                    Suggest a New Habit
-                </button>
-
-                <div id="suggestion-box" class="text-center mt-4 p-4 h-20 bg-gray-50 rounded-lg border border-dashed border-gray-300 flex items-center justify-center">
-                    <p id="suggestion-text" class="text-gray-500 italic">Click the button to get an idea!</p>
+        <div id="friend-view">
+            <div class="mb-6">
+                <label class="block text-md font-semibold text-gray-700 mb-2">Share Your ID With Friends!</label>
+                <div class="flex gap-2">
+                    <input type="text" id="your-user-id" class="flex-grow p-3 bg-gray-100 border border-gray-300 rounded-lg shadow-sm" readonly>
+                    <button id="copy-id-btn" class="py-3 px-5 bg-gray-700 text-white text-md font-semibold rounded-lg shadow-sm transition-all hover:bg-gray-800 active:scale-[.98]">Copy</button>
                 </div>
             </div>
 
+            <div class="mb-4 border-t pt-6">
+                <label for="friend-id-input" class="block text-md font-semibold text-gray-700 mb-2">Check a Friend's Progress</label>
+                <div class="flex gap-2">
+                    <input type="text" id="friend-id-input" class="flex-grow p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Paste friend's ID">
+                    <button id="search-friend-btn" class="py-3 px-5 bg-blue-600 text-white text-md font-semibold rounded-lg shadow-sm transition-all hover:bg-blue-700 active:scale-[.98]">Load</button>
+                </div>
+            </div>
+
+            <div id="friend-stats-display" class="text-center p-4 h-32 bg-gray-50 rounded-lg border border-dashed border-gray-300 flex items-center justify-center">
+                <p class="text-gray-500 italic">Search for a friend to see their stats!</p>
+            </div>
         </div>
 
     </div>
 
     <script>
         // --- Globals ---
-        // !!! IMPORTANT: This MUST be your live Render URL !!!
-        const BACKEND_URL = 'https://mindtrack-backend-5wpc.onrender.com'; // <--- Make sure this is your URL!
-        
-        let allHabitLogs = {}; // Stores { "2025-10-25": ["water"], ... }
-        let userHabits = [];   // Stores [{id: 1, name: 'water', is_deletable: 0}, ...]
+        const BACKEND_URL = 'https://mindtrack-backend.onrender.com'; // Your Render URL
+        let userHabits = [];
+        let allHabitLogs = {};
+
+        // --- NEW USER ID LOGIC ---
+        let userId = localStorage.getItem('mindtrack_userId');
+        if (!userId) {
+            userId = 'user_' + Math.random().toString(36).substring(2, 11);
+            localStorage.setItem('mindtrack_userId', userId);
+        }
+        console.log("Current User ID:", userId);
 
         // --- Element Refs ---
         const logButton = document.getElementById('log-button');
@@ -165,14 +144,17 @@
         const habitListLoader = document.getElementById('habit-list-loader');
         const newHabitInput = document.getElementById('new-habit-input');
         const addHabitBtn = document.getElementById('add-habit-btn');
-        
+        const subtitle = document.getElementById('subtitle');
+        const motivationQuote = document.getElementById('motivation-quote');
+
         // View Toggling Refs
         const logView = document.getElementById('log-view');
         const calendarView = document.getElementById('calendar-view');
+        const friendView = document.getElementById('friend-view');
         const showLogBtn = document.getElementById('show-log-btn');
         const showCalendarBtn = document.getElementById('show-calendar-btn');
-        const subtitle = document.getElementById('subtitle');
-        
+        const showFriendBtn = document.getElementById('show-friend-btn');
+
         // Calendar & Stats Refs
         const calendarMonthYear = document.getElementById('calendar-month-year');
         const calendarDaysGrid = document.getElementById('calendar-days-grid');
@@ -180,48 +162,50 @@
         const statStreak = document.getElementById('stat-streak');
         const statTotalDays = document.getElementById('stat-total-days');
         const statBestHabit = document.getElementById('stat-best-habit');
-        const statTotalHabits = document.getElementById('stat-total-habits'); 
-        const statStreakEmoji = document.getElementById('stat-streak-emoji'); 
+        const statTotalHabits = document.getElementById('stat-total-habits');
+        const statStreakEmoji = document.getElementById('stat-streak-emoji');
 
-        // Motivation Ref
-        const motivationQuote = document.getElementById('motivation-quote');
+        // Friends Refs
+        const yourUserIdInput = document.getElementById('your-user-id');
+        const copyIdBtn = document.getElementById('copy-id-btn');
+        const friendIdInput = document.getElementById('friend-id-input');
+        const searchFriendBtn = document.getElementById('search-friend-btn');
+        const friendStatsDisplay = document.getElementById('friend-stats-display');
 
-        // AI Suggestion Refs
-        const suggestHabitBtn = document.getElementById('suggest-habit-btn');
-        const suggestionText = document.getElementById('suggestion-text');
-
-        // --- Utility ---
-        function getTodayDateString() {
-            return new Date().toISOString().split('T')[0];
+        // --- NEW API HELPER ---
+        /**
+         * A wrapper for fetch() that automatically adds the X-User-Id header.
+         */
+        async function fetchApi(endpoint, options = {}) {
+            if (!options.headers) options.headers = {};
+            options.headers['X-User-Id'] = userId;
+            if (options.body && !options.headers['Content-Type']) {
+                options.headers['Content-Type'] = 'application/json';
+            }
+            const response = await fetch(BACKEND_URL + endpoint, options);
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('API Error:', errorData);
+                throw new Error(errorData.error || 'API request failed');
+            }
+            return response.json();
         }
 
         // --- Data Fetching ---
-        
+
         /**
          * Fetches all essential data when the app loads.
-         * Renders the UI once all data is available.
          */
         async function loadApp() {
             try {
-                // Fetch all data in parallel
-                const [habitsResponse, todayLogsResponse, motivationResponse] = await Promise.all([
-                    fetch(`${BACKEND_URL}/get_habits`),
-                    fetch(`${BACKEND_URL}/get_today_logs`),
-                    fetch(`${BACKEND_URL}/get_motivation`)
+                const [habits, todayLogs, motivationData] = await Promise.all([
+                    fetchApi('/get_habits'),
+                    fetchApi('/get_today_logs'),
+                    fetchApi('/get_motivation')
                 ]);
-
-                if (!habitsResponse.ok) throw new Error('Failed to fetch habits');
-                if (!todayLogsResponse.ok) throw new Error('Failed to fetch today\'s logs');
-                if (!motivationResponse.ok) throw new Error('Failed to fetch motivation');
-
-                userHabits = await habitsResponse.json();
-                const todayLogs = await todayLogsResponse.json(); // e.g., ["water", "reading"]
-                const motivationData = await motivationResponse.json();
-
-                // Render the app components
+                userHabits = habits;
                 motivationQuote.textContent = motivationData.message;
                 renderHabitList(todayLogs);
-
             } catch (error) {
                 console.error('Error loading app:', error);
                 habitListContainer.innerHTML = `<p class="text-red-600 text-center">Error: Could not connect to backend. Is it running?</p>`;
@@ -233,211 +217,127 @@
          * Fetches all data needed for the Calendar & Stats view.
          */
         async function fetchCalendarAndStats() {
-            calendarLoader.style.display = 'block'; // Show loader
-            calendarDaysGrid.innerHTML = ''; // Clear old grid
-            
+            calendarLoader.style.display = 'block';
+            calendarDaysGrid.innerHTML = '';
             try {
-                // Fetch stats and all-time logs in parallel
-                const [statsResponse, allLogsResponse] = await Promise.all([
-                    fetch(`${BACKEND_URL}/get_stats`),
-                    fetch(`${BACKEND_URL}/get_logs`)
+                const [stats, logs] = await Promise.all([
+                    fetchApi('/get_stats'),
+                    fetchApi('/get_logs')
                 ]);
-                
-                if (!statsResponse.ok) throw new Error('Failed to fetch stats');
-                if (!allLogsResponse.ok) throw new Error('Failed to fetch logs');
-
-                const stats = await statsResponse.json();
-                allHabitLogs = await allLogsResponse.json();
-
-                // Populate stats
+                allHabitLogs = logs;
                 statStreak.textContent = stats.current_streak;
-                statStreakEmoji.textContent = stats.streak_emoji; 
+                statStreakEmoji.textContent = stats.streak_emoji;
                 statTotalDays.textContent = stats.total_days;
-                statTotalHabits.textContent = stats.total_habits_completed; 
-                
-                // --- THIS IS THE CHANGE ---
-                // Takes "Read for 20 minutes" and turns it into "Read"
+                statTotalHabits.textContent = stats.total_habits_completed;
                 statBestHabit.textContent = stats.best_habit.split(' ')[0];
-
-                // Render calendar
                 renderCalendar();
-
             } catch (error) {
                 console.error('Error fetching calendar/stats:', error);
                 calendarDaysGrid.innerHTML = `<p class="text-red-600 text-center col-span-7">Error loading calendar data.</p>`;
             } finally {
-                calendarLoader.style.display = 'none'; // Hide loader
+                calendarLoader.style.display = 'none';
             }
         }
-        
+
         /**
-         * Fetches an AI-driven habit suggestion.
+         * Fetches stats for a friend.
          */
-        async function fetchSuggestion() {
-            suggestionText.textContent = 'Thinking...';
-            suggestionText.className = 'text-gray-500 italic';
-
-            // Get the list of habits the user is *already* tracking
-            const currentHabitNames = userHabits.map(h => h.name.toLowerCase());
-
+        async function searchFriend() {
+            const friendId = friendIdInput.value.trim();
+            if (!friendId) return alert('Please enter a friend ID.');
+            friendStatsDisplay.innerHTML = '<div class="loader"></div>';
             try {
-                const response = await fetch(`${BACKEND_URL}/get_suggestion`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ current_habits: currentHabitNames })
-                });
-
-                if (!response.ok) throw new Error('Failed to get suggestion');
-                
-                const data = await response.json();
-                
-                // Display the suggestion
-                suggestionText.textContent = data.suggestion;
-                suggestionText.className = 'text-blue-600 font-semibold text-lg';
-
+                // This call *doesn't* use fetchApi
+                const response = await fetch(`${BACKEND_URL}/get_friend_stats?userId=${friendId}`);
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.error || 'Friend not found');
+                }
+                const stats = await response.json();
+                friendStatsDisplay.innerHTML = `
+                    <div class="flex justify-around items-center w-full">
+                        <div class="text-center">
+                            <span class="text-5xl">${stats.streak_emoji}</span>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-lg text-gray-800">
+                                <span class="font-bold text-blue-600">${stats.current_streak}</span> day streak
+                            </p>
+                            <p class="text-lg text-gray-800">
+                                <span class="font-bold">${stats.total_days}</span> total days logged
+                            </p>
+                        </div>
+                    </div>
+                `;
             } catch (error) {
-                console.error('Error fetching suggestion:', error);
-                suggestionText.textContent = 'Error getting suggestion. Try again!';
-                suggestionText.className = 'text-red-600 italic';
+                console.error('Error fetching friend stats:', error);
+                friendStatsDisplay.innerHTML = `<p class="text-red-600 italic">Error: ${error.message}. Please check the ID.</p>`;
             }
         }
-        
+
         // --- Data Posting ---
 
-        /**
-         * Sends the currently checked habits to the backend.
-         */
         async function logHabits() {
             const completedHabits = [];
-            // Find all checkboxes that are currently in the DOM
             document.querySelectorAll('.habit-checkbox').forEach(checkbox => {
-                if (checkbox.checked) {
-                    completedHabits.push(checkbox.getAttribute('data-habit-name'));
-                }
+                if (checkbox.checked) completedHabits.push(checkbox.getAttribute('data-habit-name'));
             });
-
-            console.log('Logging habits:', completedHabits);
             statusLabel.textContent = 'Logging...';
             statusLabel.className = 'text-center mt-4 h-6 text-lg text-gray-500';
-
             try {
-                const response = await fetch(`${BACKEND_URL}/log`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ habits: completedHabits })
-                });
-
-                if (!response.ok) throw new Error('Network response was not ok');
-                
-                const data = await response.json();
-                console.log('Backend response:', data);
+                await fetchApi('/log', { method: 'POST', body: JSON.stringify({ habits: completedHabits }) });
                 statusLabel.textContent = 'Logged successfully!';
                 statusLabel.className = 'text-center mt-4 h-6 text-lg text-green-600';
-                
-                // After successful log, re-fetch motivation (streak might have changed)
-                try {
-                    const motivationResponse = await fetch(`${BACKEND_URL}/get_motivation`);
-                    if (motivationResponse.ok) {
-                        const motivationData = await motivationResponse.json();
-                        motivationQuote.textContent = motivationData.message;
-                    }
-                } catch (motivationError) {
-                    console.error("Failed to re-fetch motivation:", motivationError);
-                    // Don't show a big error, just let the log success message stand
-                }
-
+                const motivationData = await fetchApi('/get_motivation');
+                motivationQuote.textContent = motivationData.message;
             } catch (error) {
                 console.error('Error logging habits:', error);
                 statusLabel.textContent = 'Error: Backend is offline.';
                 statusLabel.className = 'text-center mt-4 h-6 text-lg text-red-600';
             }
-
             setTimeout(() => { statusLabel.textContent = ''; }, 3000);
         }
 
-        /**
-         * Adds a new custom habit.
-         */
         async function addHabit() {
             const habitName = newHabitInput.value.trim();
-            if (!habitName) {
-                alert('Please enter a habit name.');
-                return;
-            }
-
+            if (!habitName) return;
             try {
-                const response = await fetch(`${BACKEND_URL}/add_habit`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: habitName })
-                });
-
-                if (!response.ok) throw new Error('Failed to add habit');
-
-                // Success! Refetch the habit list and rerender it
-                userHabits = await response.json();
-                renderHabitList([]); // Rerender, don't worry about checks
-                newHabitInput.value = ''; // Clear input
-
+                userHabits = await fetchApi('/add_habit', { method: 'POST', body: JSON.stringify({ name: habitName }) });
+                renderHabitList([]);
+                newHabitInput.value = '';
             } catch (error) {
                 console.error('Error adding habit:', error);
-                alert('Error adding habit. Please try again.');
+                alert(`Error: ${error.message}`);
             }
         }
 
-        /**
-         * Deletes a custom habit.
-         */
         async function deleteHabit(habitId) {
-            if (!confirm('Are you sure you want to delete this habit?')) {
-                return;
-            }
-
+            if (!confirm('Are you sure you want to delete this habit?')) return;
             try {
-                const response = await fetch(`${BACKEND_URL}/delete_habit`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: habitId })
-                });
-
-                if (!response.ok) throw new Error('Failed to delete habit');
-
-                // Success! Refetch the habit list and rerender it
-                userHabits = await response.json();
-                renderHabitList([]); // Rerender, don't worry about checks
-
+                userHabits = await fetchApi('/delete_habit', { method: 'POST', body: JSON.stringify({ id: habitId }) });
+                renderHabitList([]);
             } catch (error) {
                 console.error('Error deleting habit:', error);
-                alert('Error deleting habit. Please try again.');
+                alert(`Error: ${error.message}`);
             }
         }
 
-
         // --- View Rendering ---
-        
-        /**
-         * Builds the HTML for the habit list dynamically.
-         * @param {string[]} todayLogs - A list of habit names logged today.
-         */
+
         function renderHabitList(todayLogs) {
-            habitListContainer.innerHTML = ''; // Clear loader or old list
-            
+            habitListContainer.innerHTML = '';
             if (userHabits.length === 0) {
                  habitListContainer.innerHTML = `<p class="text-gray-500 text-center">No habits added yet. Add one below!</p>`;
                  return;
             }
-
             userHabits.forEach(habit => {
                 const isChecked = todayLogs.includes(habit.name);
-
                 const habitElement = document.createElement('label');
                 habitElement.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer transition-all hover:shadow-md';
-                
                 let deleteButtonHTML = '';
                 if (habit.is_deletable) {
                     deleteButtonHTML = `<button data-habit-id="${habit.id}" class="delete-habit-btn text-red-400 font-bold text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-100">&times;</button>`;
                 }
-
                 habitElement.innerHTML = `
                     <span class="text-lg text-gray-800">${habit.name}</span>
                     <div class="flex items-center gap-2">
@@ -445,82 +345,70 @@
                         <input type="checkbox" data-habit-name="${habit.name}" class="custom-checkbox habit-checkbox appearance-none w-6 h-6 border-2 border-gray-300 rounded-md transition-all" ${isChecked ? 'checked' : ''}>
                     </div>
                 `;
-                
                 habitListContainer.appendChild(habitElement);
             });
-
-            // Add event listeners to the new delete buttons
             document.querySelectorAll('.delete-habit-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    e.preventDefault(); // Stop label from toggling checkbox
-                    e.stopPropagation();
-                    const habitId = e.target.getAttribute('data-habit-id');
-                    deleteHabit(habitId);
+                    e.preventDefault(); e.stopPropagation();
+                    deleteHabit(e.target.getAttribute('data-habit-id'));
                 });
             });
         }
 
-        /**
-         * Renders the calendar grid for the current month.
-         */
         function renderCalendar() {
-            const today = new Date(); 
-            const month = today.getMonth(); 
+            const today = new Date();
+            const month = today.getMonth();
             const year = today.getFullYear();
-
-            calendarMonthYear.textContent = today.toLocaleDateString('en-US', {
-                month: 'long',
-                year: 'numeric'
-            });
-
-            calendarDaysGrid.innerHTML = ''; // Clear loader
-
+            calendarMonthYear.textContent = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            calendarDaysGrid.innerHTML = '';
             const firstDayOfMonth = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-            for (let i = 0; i < firstDayOfMonth; i++) {
-                calendarDaysGrid.appendChild(document.createElement('div'));
-            }
-
+            for (let i = 0; i < firstDayOfMonth; i++) calendarDaysGrid.appendChild(document.createElement('div'));
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'w-10 h-10 flex items-center justify-center rounded-full';
                 dayDiv.textContent = day;
-                
                 const dayString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
                 if (allHabitLogs[dayString] && allHabitLogs[dayString].length > 0) {
                     dayDiv.classList.add('bg-green-200', 'text-green-800', 'font-bold');
                 }
-
                 if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
                     dayDiv.classList.add(allHabitLogs[dayString] ? 'bg-green-600' : 'bg-blue-600', 'text-white');
                 }
-                
                 calendarDaysGrid.appendChild(dayDiv);
             }
         }
 
-        /**
-         * Toggles between the "Log Habits" and "Calendar & Stats" views.
-         */
-        function toggleView(showView) {
-            if (showView === 'log') {
+        function toggleView(viewToShow) {
+            logView.style.display = 'none';
+            calendarView.style.display = 'none';
+            friendView.style.display = 'none';
+            showLogBtn.className = 'w-1/3 py-2 text-center font-semibold tab-inactive rounded-md';
+            showCalendarBtn.className = 'w-1/3 py-2 text-center font-semibold tab-inactive rounded-md';
+            showFriendBtn.className = 'w-1/3 py-2 text-center font-semibold tab-inactive rounded-md';
+
+            if (viewToShow === 'log') {
                 logView.style.display = 'block';
-                calendarView.style.display = 'none';
+                showLogBtn.className = 'w-1/3 py-2 text-center font-semibold tab-active rounded-md';
                 subtitle.textContent = 'Log your daily habits';
-                showLogBtn.className = 'w-1/2 py-2 text-center font-semibold text-white bg-blue-600 rounded-md shadow';
-                showCalendarBtn.className = 'w-1/2 py-2 text-center font-semibold text-gray-600';
-            } else {
-                logView.style.display = 'none';
+            } else if (viewToShow === 'calendar') {
                 calendarView.style.display = 'block';
+                showCalendarBtn.className = 'w-1/3 py-2 text-center font-semibold tab-active rounded-md';
                 subtitle.textContent = 'Your progress & stats';
-                showLogBtn.className = 'w-1/2 py-2 text-center font-semibold text-gray-600';
-                showCalendarBtn.className = 'w-1/2 py-2 text-center font-semibold text-white bg-blue-600 rounded-md shadow';
-                
-                // Fetch fresh calendar/stats data *every time* user clicks this tab
                 fetchCalendarAndStats();
+            } else if (viewToShow === 'friend') {
+                friendView.style.display = 'block';
+                showFriendBtn.className = 'w-1/3 py-2 text-center font-semibold tab-active rounded-md';
+                subtitle.textContent = 'Check on a friend';
+                yourUserIdInput.value = userId;
             }
+        }
+
+        function copyUserId() {
+            yourUserIdInput.select();
+            document.execCommand('copy');
+            copyIdBtn.textContent = 'Copied!';
+            setTimeout(() => { copyIdBtn.textContent = 'Copy'; }, 2000);
         }
 
         // --- Event Listeners ---
@@ -528,10 +416,11 @@
         addHabitBtn.addEventListener('click', addHabit);
         showLogBtn.addEventListener('click', () => toggleView('log'));
         showCalendarBtn.addEventListener('click', () => toggleView('calendar'));
-        suggestHabitBtn.addEventListener('click', fetchSuggestion);
+        showFriendBtn.addEventListener('click', () => toggleView('friend'));
+        copyIdBtn.addEventListener('click', copyUserId);
+        searchFriendBtn.addEventListener('click', searchFriend);
 
         // --- Initial Load ---
-        // Start the app by loading all essential data
         loadApp();
 
     </script>
