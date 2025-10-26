@@ -1,4 +1,4 @@
-# ✨ Flicker Habits (MindTrack) - Hackathon Frontend
+[# ✨ Flicker Habits (MindTrack) - Hackathon Frontend
 
 This is the frontend for the Flicker Habits wellness and habit tracking application, built for the Hackarena hackathon (Problem 3).
 
@@ -39,4 +39,4 @@ This frontend is ready for deployment on **Netlify's free tier**.
     * Netlify will automatically detect it as a static site. No build command or publish directory is needed.
     * Deploy the site.
 
-Your Flicker Habits app will be live!
+Your Flicker Habits app will be live!](https://coderulerno1.github.io/MindTrack-Frontend/)
