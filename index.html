@@ -22,9 +22,10 @@
         #calendar-view, #friend-view { display: none; }
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* Style for the active tab */
         .tab-active { background-color: #3b82f6; color: white; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); }
         .tab-inactive { color: #4b5563; }
+        /* Style for the character image */
+        #character-img { width: 40px; height: 40px; margin-right: 12px; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans">
@@ -43,7 +44,8 @@
         </div>
 
         <div id="log-view">
-            <div class="text-center p-4 mb-4 bg-blue-50 border-l-4 border-blue-400 rounded-md shadow-sm min-h-[60px] flex items-center justify-center">
+            <div class="text-left p-4 mb-4 bg-blue-50 border-l-4 border-blue-400 rounded-md shadow-sm min-h-[60px] flex items-center">
+                <img id="character-img" src="" alt="Character"> 
                 <p class="text-lg text-blue-800" id="motivation-quote">Loading...</p>
             </div>
             <div class="space-y-4" id="habit-list-container">
@@ -61,7 +63,7 @@
         </div>
 
         <div id="calendar-view">
-            <div class="grid grid-cols-4 gap-2 mb-6 text-center">
+           <div class="grid grid-cols-4 gap-2 mb-6 text-center">
                 <div>
                     <div class="text-3xl h-10 flex items-center justify-center">
                         <span class="font-bold text-blue-600" id="stat-streak">0</span>
@@ -98,16 +100,15 @@
                 <div class="loader" id="calendar-loader"></div>
             </div>
         </div>
-
+        
         <div id="friend-view">
-            <div class="mb-6">
+             <div class="mb-6">
                 <label class="block text-md font-semibold text-gray-700 mb-2">Share Your ID With Friends!</label>
                 <div class="flex gap-2">
                     <input type="text" id="your-user-id" class="flex-grow p-3 bg-gray-100 border border-gray-300 rounded-lg shadow-sm" readonly>
                     <button id="copy-id-btn" class="py-3 px-5 bg-gray-700 text-white text-md font-semibold rounded-lg shadow-sm transition-all hover:bg-gray-800 active:scale-[.98]">Copy</button>
                 </div>
             </div>
-
             <div class="mb-4 border-t pt-6">
                 <label for="friend-id-input" class="block text-md font-semibold text-gray-700 mb-2">Check a Friend's Progress</label>
                 <div class="flex gap-2">
@@ -115,7 +116,6 @@
                     <button id="search-friend-btn" class="py-3 px-5 bg-blue-600 text-white text-md font-semibold rounded-lg shadow-sm transition-all hover:bg-blue-700 active:scale-[.98]">Load</button>
                 </div>
             </div>
-
             <div id="friend-stats-display" class="text-center p-4 h-32 bg-gray-50 rounded-lg border border-dashed border-gray-300 flex items-center justify-center">
                 <p class="text-gray-500 italic">Search for a friend to see their stats!</p>
             </div>
@@ -125,19 +125,28 @@
 
     <script>
         // --- Globals ---
-        const BACKEND_URL = 'https://mindtrack-backend-5wpc.onrender.com'; // Your Render URL
+        const BACKEND_URL = 'https://mindtrack-backend.onrender.com'; // Your Render URL
         let userHabits = [];
         let allHabitLogs = {};
-
-        // --- NEW USER ID LOGIC ---
         let userId = localStorage.getItem('mindtrack_userId');
         if (!userId) {
             userId = 'user_' + Math.random().toString(36).substring(2, 11);
             localStorage.setItem('mindtrack_userId', userId);
         }
         console.log("Current User ID:", userId);
+        
+        // --- NEW: Image URLs based on emoji ---
+        // !!! REPLACE THESE WITH YOUR ACTUAL GITHUB IMAGE URLS !!!
+        const CHARACTER_IMAGES = {
+            '😔': 'https://raw.githubusercontent.com/CodeRulerNo1/MindTrack-Frontend/blob/main/img/New%20Project%20.png', // Replace
+            '😊': 'https://raw.githubusercontent.com/CodeRulerNo1/MindTrack-Frontend/blob/main/img/New%20Project%20(1).png', // Replace
+            '🔥': 'https://raw.githubusercontent.com/CodeRulerNo1/MindTrack-Frontend/blob/main/img/New%20Project%20(2).png', // Replace
+            '🏆': 'https://raw.githubusercontent.com/CodeRulerNo1/MindTrack-Frontend/blob/main/img/New%20Project%20(3).png', // Replace
+            'default': 'https://raw.githubusercontent.com/CodeRulerNo1/MindTrack-Frontend/blob/main/img/New%20Project%20(1).png' // Fallback - Replace
+        };
 
         // --- Element Refs ---
+        // (No changes needed here)
         const logButton = document.getElementById('log-button');
         const statusLabel = document.getElementById('status-label');
         const habitListContainer = document.getElementById('habit-list-container');
@@ -146,6 +155,7 @@
         const addHabitBtn = document.getElementById('add-habit-btn');
         const subtitle = document.getElementById('subtitle');
         const motivationQuote = document.getElementById('motivation-quote');
+        const characterImg = document.getElementById('character-img'); // <-- NEW Ref
 
         // View Toggling Refs
         const logView = document.getElementById('log-view');
@@ -172,10 +182,7 @@
         const searchFriendBtn = document.getElementById('search-friend-btn');
         const friendStatsDisplay = document.getElementById('friend-stats-display');
 
-        // --- NEW API HELPER ---
-        /**
-         * A wrapper for fetch() that automatically adds the X-User-Id header.
-         */
+        // --- API Helper ---
         async function fetchApi(endpoint, options = {}) {
             if (!options.headers) options.headers = {};
             options.headers['X-User-Id'] = userId;
@@ -192,29 +199,43 @@
         }
 
         // --- Data Fetching ---
-
+        
         /**
          * Fetches all essential data when the app loads.
+         * Includes stats now to get the emoji for the character image.
          */
         async function loadApp() {
             try {
-                const [habits, todayLogs, motivationData] = await Promise.all([
+                // Fetch habits, today's logs, motivation, AND stats
+                const [habits, todayLogs, motivationData, stats] = await Promise.all([
                     fetchApi('/get_habits'),
                     fetchApi('/get_today_logs'),
-                    fetchApi('/get_motivation')
+                    fetchApi('/get_motivation'),
+                    fetchApi('/get_stats') // <-- Fetch stats too
                 ]);
+
                 userHabits = habits;
+                
+                // Update motivation quote
                 motivationQuote.textContent = motivationData.message;
+                
+                // Update character image based on streak emoji
+                const emoji = stats.streak_emoji || 'default';
+                characterImg.src = CHARACTER_IMAGES[emoji] || CHARACTER_IMAGES['default'];
+                
+                // Render the habit list
                 renderHabitList(todayLogs);
+
             } catch (error) {
                 console.error('Error loading app:', error);
                 habitListContainer.innerHTML = `<p class="text-red-600 text-center">Error: Could not connect to backend. Is it running?</p>`;
                 motivationQuote.textContent = "Could not load data. Please refresh.";
+                characterImg.style.display = 'none'; // Hide image on error
             }
         }
 
         /**
-         * Fetches all data needed for the Calendar & Stats view.
+         * Fetches data for the Calendar & Stats view. (No changes needed)
          */
         async function fetchCalendarAndStats() {
             calendarLoader.style.display = 'block';
@@ -238,16 +259,15 @@
                 calendarLoader.style.display = 'none';
             }
         }
-
+        
         /**
-         * Fetches stats for a friend.
+         * Fetches stats for a friend. (No changes needed)
          */
         async function searchFriend() {
             const friendId = friendIdInput.value.trim();
             if (!friendId) return alert('Please enter a friend ID.');
             friendStatsDisplay.innerHTML = '<div class="loader"></div>';
             try {
-                // This call *doesn't* use fetchApi
                 const response = await fetch(`${BACKEND_URL}/get_friend_stats?userId=${friendId}`);
                 if (!response.ok) {
                     const err = await response.json();
@@ -274,9 +294,12 @@
                 friendStatsDisplay.innerHTML = `<p class="text-red-600 italic">Error: ${error.message}. Please check the ID.</p>`;
             }
         }
-
+        
         // --- Data Posting ---
 
+        /**
+         * Sends logs and updates motivation/character image.
+         */
         async function logHabits() {
             const completedHabits = [];
             document.querySelectorAll('.habit-checkbox').forEach(checkbox => {
@@ -285,11 +308,21 @@
             statusLabel.textContent = 'Logging...';
             statusLabel.className = 'text-center mt-4 h-6 text-lg text-gray-500';
             try {
+                // Log the habits
                 await fetchApi('/log', { method: 'POST', body: JSON.stringify({ habits: completedHabits }) });
+                
                 statusLabel.textContent = 'Logged successfully!';
                 statusLabel.className = 'text-center mt-4 h-6 text-lg text-green-600';
-                const motivationData = await fetchApi('/get_motivation');
+                
+                // After logging, fetch BOTH motivation AND stats to update text and image
+                const [motivationData, stats] = await Promise.all([
+                    fetchApi('/get_motivation'),
+                    fetchApi('/get_stats')
+                ]);
                 motivationQuote.textContent = motivationData.message;
+                const emoji = stats.streak_emoji || 'default';
+                characterImg.src = CHARACTER_IMAGES[emoji] || CHARACTER_IMAGES['default'];
+
             } catch (error) {
                 console.error('Error logging habits:', error);
                 statusLabel.textContent = 'Error: Backend is offline.';
@@ -298,6 +331,8 @@
             setTimeout(() => { statusLabel.textContent = ''; }, 3000);
         }
 
+        // --- Other functions (addHabit, deleteHabit, renderHabitList, renderCalendar, toggleView, copyUserId) ---
+        // (No changes needed in these functions)
         async function addHabit() {
             const habitName = newHabitInput.value.trim();
             if (!habitName) return;
@@ -310,7 +345,6 @@
                 alert(`Error: ${error.message}`);
             }
         }
-
         async function deleteHabit(habitId) {
             if (!confirm('Are you sure you want to delete this habit?')) return;
             try {
@@ -321,9 +355,6 @@
                 alert(`Error: ${error.message}`);
             }
         }
-
-        // --- View Rendering ---
-
         function renderHabitList(todayLogs) {
             habitListContainer.innerHTML = '';
             if (userHabits.length === 0) {
@@ -354,60 +385,35 @@
                 });
             });
         }
-
         function renderCalendar() {
-            const today = new Date();
-            const month = today.getMonth();
-            const year = today.getFullYear();
+            const today = new Date(); const month = today.getMonth(); const year = today.getFullYear();
             calendarMonthYear.textContent = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-            calendarDaysGrid.innerHTML = '';
-            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            calendarDaysGrid.innerHTML = ''; const firstDayOfMonth = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             for (let i = 0; i < firstDayOfMonth; i++) calendarDaysGrid.appendChild(document.createElement('div'));
             for (let day = 1; day <= daysInMonth; day++) {
-                const dayDiv = document.createElement('div');
-                dayDiv.className = 'w-10 h-10 flex items-center justify-center rounded-full';
-                dayDiv.textContent = day;
+                const dayDiv = document.createElement('div'); dayDiv.className = 'w-10 h-10 flex items-center justify-center rounded-full'; dayDiv.textContent = day;
                 const dayString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                if (allHabitLogs[dayString] && allHabitLogs[dayString].length > 0) {
-                    dayDiv.classList.add('bg-green-200', 'text-green-800', 'font-bold');
-                }
-                if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-                    dayDiv.classList.add(allHabitLogs[dayString] ? 'bg-green-600' : 'bg-blue-600', 'text-white');
-                }
+                if (allHabitLogs[dayString] && allHabitLogs[dayString].length > 0) dayDiv.classList.add('bg-green-200', 'text-green-800', 'font-bold');
+                if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) dayDiv.classList.add(allHabitLogs[dayString] ? 'bg-green-600' : 'bg-blue-600', 'text-white');
                 calendarDaysGrid.appendChild(dayDiv);
             }
         }
-
         function toggleView(viewToShow) {
-            logView.style.display = 'none';
-            calendarView.style.display = 'none';
-            friendView.style.display = 'none';
+            logView.style.display = 'none'; calendarView.style.display = 'none'; friendView.style.display = 'none';
             showLogBtn.className = 'w-1/3 py-2 text-center font-semibold tab-inactive rounded-md';
             showCalendarBtn.className = 'w-1/3 py-2 text-center font-semibold tab-inactive rounded-md';
             showFriendBtn.className = 'w-1/3 py-2 text-center font-semibold tab-inactive rounded-md';
-
             if (viewToShow === 'log') {
-                logView.style.display = 'block';
-                showLogBtn.className = 'w-1/3 py-2 text-center font-semibold tab-active rounded-md';
-                subtitle.textContent = 'Log your daily habits';
+                logView.style.display = 'block'; showLogBtn.className = 'w-1/3 py-2 text-center font-semibold tab-active rounded-md'; subtitle.textContent = 'Log your daily habits';
             } else if (viewToShow === 'calendar') {
-                calendarView.style.display = 'block';
-                showCalendarBtn.className = 'w-1/3 py-2 text-center font-semibold tab-active rounded-md';
-                subtitle.textContent = 'Your progress & stats';
-                fetchCalendarAndStats();
+                calendarView.style.display = 'block'; showCalendarBtn.className = 'w-1/3 py-2 text-center font-semibold tab-active rounded-md'; subtitle.textContent = 'Your progress & stats'; fetchCalendarAndStats();
             } else if (viewToShow === 'friend') {
-                friendView.style.display = 'block';
-                showFriendBtn.className = 'w-1/3 py-2 text-center font-semibold tab-active rounded-md';
-                subtitle.textContent = 'Check on a friend';
-                yourUserIdInput.value = userId;
+                friendView.style.display = 'block'; showFriendBtn.className = 'w-1/3 py-2 text-center font-semibold tab-active rounded-md'; subtitle.textContent = 'Check on a friend'; yourUserIdInput.value = userId;
             }
         }
-
         function copyUserId() {
-            yourUserIdInput.select();
-            document.execCommand('copy');
-            copyIdBtn.textContent = 'Copied!';
+            yourUserIdInput.select(); document.execCommand('copy'); copyIdBtn.textContent = 'Copied!';
             setTimeout(() => { copyIdBtn.textContent = 'Copy'; }, 2000);
         }
 
